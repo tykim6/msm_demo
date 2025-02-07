@@ -28,33 +28,45 @@ def load_geojson():
     return texas_zips
 
 
-# Initialize session state for tracking initial load and data
+# Initialize session state variables at the very beginning
+if "df" not in st.session_state:
+    st.session_state.df = None
+if "texas_zips" not in st.session_state:
+    st.session_state.texas_zips = None
 if "initial_load" not in st.session_state:
     st.session_state.initial_load = True
-    st.session_state.df = None
-    st.session_state.texas_zips = None
 
-    # Create progress indicators
-    progress_placeholder = st.empty()
-    status_placeholder = st.empty()
+# Load data if it hasn't been loaded yet
+if st.session_state.initial_load:
+    try:
+        # Create progress indicators
+        progress_placeholder = st.empty()
+        status_placeholder = st.empty()
 
-    with progress_placeholder.container():
-        progress_bar = st.progress(0)
-    with status_placeholder.container():
-        status_text = st.empty()
+        with progress_placeholder.container():
+            progress_bar = st.progress(0)
+        with status_placeholder.container():
+            status_text = st.empty()
 
-    # Load data with progress updates
-    status_text.text("Loading CSV data...")
-    st.session_state.df = load_data()
-    progress_bar.progress(25)
+        # Load data with progress updates
+        status_text.text("Loading CSV data...")
+        st.session_state.df = load_data()
+        progress_bar.progress(50)
 
-    status_text.text("Loading GeoJSON data (this might take a moment)...")
-    st.session_state.texas_zips = load_geojson()
-    progress_bar.progress(50)
+        status_text.text("Loading GeoJSON data...")
+        st.session_state.texas_zips = load_geojson()
+        progress_bar.progress(100)
 
-    # Clean up progress indicators
-    progress_placeholder.empty()
-    status_placeholder.empty()
+        # Mark initial load as complete
+        st.session_state.initial_load = False
+
+        # Clean up progress indicators
+        progress_placeholder.empty()
+        status_placeholder.empty()
+
+    except Exception as e:
+        st.error(f"Error loading data: {str(e)}")
+        st.stop()
 
 # Get the data from session state
 df = st.session_state.df
@@ -62,7 +74,7 @@ texas_zips = st.session_state.texas_zips
 
 # Ensure data is loaded before proceeding
 if df is None or texas_zips is None:
-    st.error("Error loading data. Please refresh the page.")
+    st.error("Data not properly loaded. Please refresh the page.")
     st.stop()
 
 # Title
