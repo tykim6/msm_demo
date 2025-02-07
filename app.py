@@ -14,7 +14,7 @@ st.set_page_config(layout="wide", page_title="Real Estate Market Analysis")
 @st.cache_data
 def load_data():
     # Load the merged dataframe
-    df = pd.read_csv("data/tmp/merge.csv")
+    df = pd.read_csv("data/merge.csv")
     # Convert zip codes to strings
     df["zip"] = df["zip"].astype(str)
     return df
