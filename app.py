@@ -28,10 +28,13 @@ def load_geojson():
     return texas_zips
 
 
-# Initialize session state for tracking initial load
+# Initialize session state for tracking initial load and data
 if "initial_load" not in st.session_state:
     st.session_state.initial_load = True
-    # Create progress indicators only during initial load
+    st.session_state.df = None
+    st.session_state.texas_zips = None
+
+    # Create progress indicators
     progress_placeholder = st.empty()
     status_placeholder = st.empty()
 
@@ -42,24 +45,25 @@ if "initial_load" not in st.session_state:
 
     # Load data with progress updates
     status_text.text("Loading CSV data...")
-    df = load_data()
+    st.session_state.df = load_data()
     progress_bar.progress(25)
 
     status_text.text("Loading GeoJSON data (this might take a moment)...")
-    texas_zips = load_geojson()
+    st.session_state.texas_zips = load_geojson()
     progress_bar.progress(50)
-
-    # Store data in session state
-    st.session_state.df = df
-    st.session_state.texas_zips = texas_zips
 
     # Clean up progress indicators
     progress_placeholder.empty()
     status_placeholder.empty()
-else:
-    # Use stored data on subsequent renders
-    df = st.session_state.df
-    texas_zips = st.session_state.texas_zips
+
+# Get the data from session state
+df = st.session_state.df
+texas_zips = st.session_state.texas_zips
+
+# Ensure data is loaded before proceeding
+if df is None or texas_zips is None:
+    st.error("Error loading data. Please refresh the page.")
+    st.stop()
 
 # Title
 st.title("Texas Real Estate Market Analysis")
